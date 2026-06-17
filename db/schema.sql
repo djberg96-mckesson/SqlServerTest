@@ -33,11 +33,13 @@ ON T_RequestTouches
 AFTER INSERT
 AS
 BEGIN
-  SET NOCOUNT ON
-  
   -- Only fire for specific touch types that trigger workflow
   IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
   BEGIN
+    -- Emit a single-column result set to mimic trigger-side extra results
+    -- seen in production workflows.
+    SELECT CAST(1 AS BIGINT) AS TriggerResult
+
     INSERT INTO T_RequestWorkflow (RequestId)
     SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
   END

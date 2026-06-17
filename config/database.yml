@@ -3,14 +3,14 @@ default: &default
   host: localhost
   port: 1433
   username: sa
-  password: TestPassword123!
+  password: "TestPassword123A#"
   timeout: 5000
   pool: 5
 
 development:
   <<: *default
-  database: test_db
+  database: master
 
 test:
   <<: *default
-  database: test_db_test
+  database: master

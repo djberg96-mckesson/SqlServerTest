@@ -1,0 +1,431 @@
+  [1m[35m (249.6ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (210.3ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (35.2ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (0.4ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (4.0ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (4.7ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.9ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (9.0ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  SET NOCOUNT ON
+  
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    INSERT INTO T_RequestWorkflow (RequestId)
+    SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
+  END
+END[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (8.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (16.7ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 1], ["TouchType", 0]]
+  [1m[36mTRANSACTION (2.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (2.6ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.3ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 2], ["TouchType", 2]]
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.0ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.5ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.2ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (3.5ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 3], ["TouchType", 3]]
+  [1m[36mTRANSACTION (2.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.6ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (5.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (4.1ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 4], ["TouchType", 8]]
+  [1m[36mTRANSACTION (4.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.4ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 5], ["TouchType", 12]]
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (6.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.3ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 6], ["TouchType", 101]]
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (16.1ms)[0m  [1m[35mIF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow[0m
+  [1m[35m (8.5ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (4.6ms)[0m  [1m[35mIF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches[0m
+  [1m[35m (3.4ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests[0m
+  [1m[35m (33.0ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (0.4ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (3.8ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.7ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.1ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.5ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    INSERT INTO T_RequestWorkflow (RequestId)
+    SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
+  END
+END[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.8ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (9.8ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 1], ["TouchType", 0]]
+  [1m[36mTRANSACTION (1.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.3ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 2], ["TouchType", 2]]
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.0ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.9ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (3.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 3], ["TouchType", 3]]
+  [1m[36mTRANSACTION (3.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.9ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.1ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 4], ["TouchType", 8]]
+  [1m[36mTRANSACTION (3.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (3.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (6.5ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.4ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 5], ["TouchType", 12]]
+  [1m[36mTRANSACTION (3.0ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (3.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (6.7ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (4.6ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 6], ["TouchType", 101]]
+  [1m[36mTRANSACTION (4.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (6.7ms)[0m  [1m[35mIF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow[0m
+  [1m[35m (4.1ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (3.2ms)[0m  [1m[35mIF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches[0m
+  [1m[35m (2.1ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests[0m
+  [1m[35m (32.0ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (3.8ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.6ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.1ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    INSERT INTO T_RequestWorkflow (RequestId)
+    SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
+  END
+END[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (9.4ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 1], ["TouchType", 0]]
+  [1m[36mTRANSACTION (1.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.2ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.7ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (3.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 2], ["TouchType", 2]]
+  [1m[36mTRANSACTION (1.8ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.3ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.5ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 3], ["TouchType", 3]]
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.0ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (5.0ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.5ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (3.1ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 4], ["TouchType", 8]]
+  [1m[36mTRANSACTION (2.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (3.2ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (7.2ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (5.0ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.5ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 5], ["TouchType", 12]]
+  [1m[36mTRANSACTION (3.4ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (3.1ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (6.7ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.3ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.0ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 6], ["TouchType", 101]]
+  [1m[36mTRANSACTION (4.1ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (10.3ms)[0m  [1m[35mIF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow[0m
+  [1m[35m (5.8ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (4.4ms)[0m  [1m[35mIF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches[0m
+  [1m[35m (3.4ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests[0m
+  [1m[35m (32.5ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (0.5ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (2.9ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.3ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.4ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    -- Emit a single-column result set to mimic trigger-side extra results
+    -- seen in production workflows.
+    SELECT CAST(1 AS BIGINT) AS TriggerResult[0m
+  [1m[35m (37.7ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (2.8ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (1.6ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (1.8ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.2ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.2ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.4ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    -- Emit a single-column result set to mimic trigger-side extra results
+    -- seen in production workflows.
+    SELECT CAST(1 AS BIGINT) AS TriggerResult
+
+    INSERT INTO T_RequestWorkflow (RequestId)
+    SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
+  END
+END[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.9ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (8.8ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 1], ["TouchType", 0]]
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.5ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (1.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 2], ["TouchType", 2]]
+  [1m[36mTRANSACTION (1.9ms)[0m  [1m[36mIF @@TRANCOUNT > 0 ROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (2.7ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.8ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 3], ["TouchType", 3]]
+  [1m[36mTRANSACTION (2.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (2.7ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (2.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.8ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.7ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 4], ["TouchType", 8]]
+  [1m[36mTRANSACTION (1.0ms)[0m  [1m[36mIF @@TRANCOUNT > 0 ROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (2.2ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (5.8ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.8ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.1ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 5], ["TouchType", 12]]
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[36mIF @@TRANCOUNT > 0 ROLLBACK TRANSACTION[0m
+  [1m[36mTRANSACTION (3.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (8.4ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (3.7ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 6], ["TouchType", 101]]
+  [1m[36mTRANSACTION (2.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (6.1ms)[0m  [1m[35mIF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow[0m
+  [1m[35m (4.9ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (6.1ms)[0m  [1m[35mIF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches[0m
+  [1m[35m (3.1ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests[0m
+  [1m[35m (31.5ms)[0m  [1m[35m-- Create main table
+IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL
+  DROP TABLE T_RequestTouches[0m
+  [1m[35m (0.4ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL
+  DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (0.4ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL
+  DROP TABLE T_Requests[0m
+  [1m[35m (3.8ms)[0m  [1m[35mCREATE TABLE T_Requests (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.5ms)[0m  [1m[35mCREATE TABLE T_RequestTouches (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  TouchType INT NOT NULL,
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.2ms)[0m  [1m[35mCREATE TABLE T_RequestWorkflow (
+  Id INT PRIMARY KEY IDENTITY(1,1),
+  RequestId INT NOT NULL FOREIGN KEY REFERENCES T_Requests(Id),
+  CreatedDate DATETIME DEFAULT GETDATE()
+)[0m
+  [1m[35m (2.6ms)[0m  [1m[35m-- Workflow trigger: fires for touch_type IN (2, 8, 12)
+-- This trigger generates an extra result set that breaks Rails 8 type casting
+CREATE TRIGGER trg_RequestTouches_Workflow
+ON T_RequestTouches
+AFTER INSERT
+AS
+BEGIN
+  -- Only fire for specific touch types that trigger workflow
+  IF EXISTS (SELECT 1 FROM inserted WHERE TouchType IN (2, 8, 12))
+  BEGIN
+    -- Emit a single-column result set to mimic trigger-side extra results
+    -- seen in production workflows.
+    SELECT CAST(1 AS BIGINT) AS TriggerResult
+
+    INSERT INTO T_RequestWorkflow (RequestId)
+    SELECT DISTINCT RequestId FROM inserted WHERE TouchType IN (2, 8, 12)
+  END
+END[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (3.8ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.2ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (9.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 1], ["TouchType", 0]]
+  [1m[36mTRANSACTION (1.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.3ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (2.6ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (1.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.6ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.9ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 2], ["TouchType", 2]]
+  [1m[36mTRANSACTION (2.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.1ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (4.0ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (0.9ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (2.0ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 3], ["TouchType", 3]]
+  [1m[36mTRANSACTION (1.8ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.7ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (5.1ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.3ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.7ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (5.6ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 4], ["TouchType", 8]]
+  [1m[36mTRANSACTION (3.0ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (3.1ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (5.4ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (4.0ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (4.4ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 5], ["TouchType", 12]]
+  [1m[36mTRANSACTION (3.6ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (2.7ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mTestRequest Create (5.3ms)[0m  [1m[32mINSERT INTO [T_Requests] DEFAULT VALUES; SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m
+  [1m[36mTRANSACTION (3.9ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[36mTRANSACTION (1.4ms)[0m  [1m[36mBEGIN TRANSACTION[0m
+  [1m[36mRequestTouch Create (4.8ms)[0m  [1m[32mINSERT INTO [T_RequestTouches] ([RequestId], [TouchType]) VALUES (@0, @1); SELECT CAST(SCOPE_IDENTITY() AS bigint) AS Ident[0m  [["RequestId", 6], ["TouchType", 101]]
+  [1m[36mTRANSACTION (3.7ms)[0m  [1m[36mCOMMIT TRANSACTION[0m
+  [1m[35m (12.2ms)[0m  [1m[35mIF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow[0m
+  [1m[35m (6.6ms)[0m  [1m[35mIF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow[0m
+  [1m[35m (4.2ms)[0m  [1m[35mIF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches[0m
+  [1m[35m (3.9ms)[0m  [1m[35mIF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests[0m

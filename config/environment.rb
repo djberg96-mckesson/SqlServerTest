@@ -11,6 +11,7 @@ Bundler.require(*Rails.groups)
 module SqlServerTest
   class Application < Rails::Application
     config.load_defaults 8.0
+    config.eager_load = false
     config.root = File.expand_path('..', __dir__)
     config.eager_load_paths << File.join(config.root, 'app', 'models')
   end

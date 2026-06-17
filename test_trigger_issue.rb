@@ -1,75 +1,76 @@
 #!/usr/bin/env ruby
 require_relative 'config/environment'
-require 'factory_bot'
 
-# Setup FactoryBot
-FactoryBot.define do
-  factory :request do
-    class RequestRecord < ApplicationRecord
-      self.table_name = 'T_Requests'
+if ENV['TRACE_ADAPTER'] == '1'
+  module LocalAdapterTrace
+    def last_inserted_id(result)
+      value = super
+      puts "last_inserted_id => #{value.inspect} (#{value.class})"
+      value
     end
-    
-    sequence(:id) { |n| n }
-  end
 
-  factory :request_touch do
-    association :request
-    touch_type { 0 }
-
-    class RequestTouch < ApplicationRecord
-      self.table_name = 'T_RequestTouches'
-      belongs_to :request, foreign_key: 'RequestId', class_name: '::RequestRecord'
+    def returning_column_values(result)
+      values = super
+      puts "returning_column_values => #{values.inspect} (#{values.class})"
+      values
     end
   end
+
+  ActiveRecord::ConnectionAdapters::SQLServerAdapter.prepend(LocalAdapterTrace)
 end
 
-# Patch FactoryBot to use correct associations
-class RequestRecord < ApplicationRecord
+if ENV['LEGACY_UNWRAP'] == '1'
+  module LegacyUnwrapSimulation
+    def last_inserted_id(result)
+      value = super
+      value = value.first if value.is_a?(Array) && value.size == 1 && !value.first.is_a?(Array)
+      value
+    end
+
+    def returning_column_values(result)
+      values = super
+      values = values.map { |v| v.is_a?(Array) && v.size == 1 ? v.first : v } if values.is_a?(Array)
+      values
+    end
+  end
+
+  ActiveRecord::ConnectionAdapters::SQLServerAdapter.prepend(LegacyUnwrapSimulation)
+end
+
+class TestRequest < ActiveRecord::Base
   self.table_name = 'T_Requests'
-  has_many :touches, foreign_key: 'RequestId', class_name: 'RequestTouch'
-end
-
-FactoryBot.define do
-  factory :request_touch do
-    touch_type { 0 }
-    
-    before(:create) do |touch|
-      touch.request_id = create(:request_record).id
-    end
-  end
-
-  factory :request_record do
-  end
+  self.primary_key = 'Id'
 end
 
 def setup_database
   conn = ActiveRecord::Base.connection
-  
+
   # Create tables and trigger
   schema_sql = File.read(File.join(__dir__, 'db', 'schema.sql'))
-  schema_sql.split(/;[\n]/).each do |statement|
-    conn.execute(statement) unless statement.strip.empty?
+  statements = schema_sql.split(/;\s*\n/).map(&:strip).reject(&:empty?)
+
+  statements.each do |statement|
+    conn.execute(statement)
   end
-  
+
   puts "✓ Database schema created"
 end
 
 def cleanup_database
   conn = ActiveRecord::Base.connection
-  
-  ['trg_RequestTouches_Workflow', 'T_RequestWorkflow', 'T_RequestTouches', 'T_Requests'].each do |obj|
-    conn.execute("DROP TABLE #{obj}") if conn.tables.include?(obj) || obj.start_with?('trg')
-  rescue => e
-    # Ignore if doesn't exist
-  end
-  
+
+  conn.execute("IF OBJECT_ID('trg_RequestTouches_Workflow', 'TR') IS NOT NULL DROP TRIGGER trg_RequestTouches_Workflow")
+  conn.execute("IF OBJECT_ID('T_RequestWorkflow', 'U') IS NOT NULL DROP TABLE T_RequestWorkflow")
+  conn.execute("IF OBJECT_ID('T_RequestTouches', 'U') IS NOT NULL DROP TABLE T_RequestTouches")
+  conn.execute("IF OBJECT_ID('T_Requests', 'U') IS NOT NULL DROP TABLE T_Requests")
+
   puts "✓ Database cleaned up"
 end
 
 def test_touch_type(type)
   begin
-    request = RequestRecord.create!
-    touch = RequestTouch.create!(request_id: request.id, touch_type: type)
+    request = TestRequest.create!
+    touch = RequestTouch.create!(RequestId: request.id, TouchType: type)
     puts "✓ touch_type=#{type} SUCCESS (id=#{touch.id})"
     true
   rescue => e
