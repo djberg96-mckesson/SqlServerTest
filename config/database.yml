@@ -1,0 +1,16 @@
+default: &default
+  adapter: sqlserver
+  host: localhost
+  port: 1433
+  username: sa
+  password: TestPassword123!
+  timeout: 5000
+  pool: 5
+
+development:
+  <<: *default
+  database: test_db
+
+test:
+  <<: *default
+  database: test_db_test
