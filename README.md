@@ -2,7 +2,7 @@
 
 This is a minimal standalone Rails 8 project to reproduce the SQL Server adapter bug with triggers.
 
-## Setup
+## Quick one-off repro (raises on Rails 8)
 
 1. Start SQL Server:
 ```bash
@@ -11,19 +11,36 @@ docker compose up -d sqlserver
 
 On Apple Silicon (M1/M2/M3), this stack intentionally runs SQL Server under amd64 emulation.
 
-Wait for the container to be healthy (check `docker compose logs sqlserver`).
+Wait for the container to be healthy:
+```bash
+docker compose logs sqlserver
+```
 
 2. Install dependencies:
 ```bash
 bundle install
 ```
 
-3. Run the test:
+3. Run the minimal repro script:
+```bash
+bundle exec ruby simple_trigger_repro.rb
+```
+
+Expected result: the insert path that fires the trigger raises with Rails 8, typically:
+
+```text
+NoMethodError: undefined method `to_i' for an instance of Array
+```
+
+## Full shebang matrix test
+
+Run the full script to test multiple touch types and print pass/fail by type:
+
 ```bash
 bundle exec ruby test_trigger_issue.rb
 ```
 
-## What it tests
+## What the full matrix test covers
 
 The test creates `RequestTouch` records with different `touch_type` values:
 - **Type 0** (view): No trigger fires → **Should succeed**
